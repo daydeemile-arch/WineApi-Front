@@ -1,4 +1,4 @@
 .vs/
-bin/
-obj/
+[Oo]bj/
+[Bb]in/
 *.user
