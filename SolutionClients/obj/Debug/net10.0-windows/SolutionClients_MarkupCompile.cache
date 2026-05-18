@@ -10,11 +10,11 @@ none
 false
 TRACE;DEBUG;NET;NET10_0;NETCOREAPP;WINDOWS;WINDOWS7_0;NET5_0_OR_GREATER;NET6_0_OR_GREATER;NET7_0_OR_GREATER;NET8_0_OR_GREATER;NET9_0_OR_GREATER;NET10_0_OR_GREATER;NETCOREAPP3_0_OR_GREATER;NETCOREAPP3_1_OR_GREATER;WINDOWS7_0_OR_GREATER
 C:\Users\housn\OneDrive\Documents\CESI\POO\SolutionClients\SolutionClients\App.xaml
-3-190469652
+8-962066244
 
-6393221395
+111923065283
 2061815282281
-MainWindow.xaml;Views\Dashboard.xaml;Views\LoginWindow.xaml;
+MainWindow.xaml;Views\CustomersView.xaml;Views\Dashboard.xaml;Views\LoginWindow.xaml;Views\SalesView.xaml;Views\StockView.xaml;Views\SuppliersView.xaml;Views\WinesView.xaml;
 
 False
 

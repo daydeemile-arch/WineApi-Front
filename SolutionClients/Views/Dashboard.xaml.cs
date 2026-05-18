@@ -8,5 +8,30 @@ namespace SolutionClients.Views
         {
             InitializeComponent();
         }
+
+        private void BtnWines_Click(object sender, RoutedEventArgs e)
+        {
+            MainFrame.Content = new WinesView();
+        }
+
+        private void BtnCustomers_Click(object sender, RoutedEventArgs e)
+        {
+            MainFrame.Content = new CustomersView();
+        }
+
+        private void BtnSuppliers_Click(object sender, RoutedEventArgs e)
+        {
+            MainFrame.Content = new SuppliersView();
+        }
+
+        private void BtnSales_Click(object sender, RoutedEventArgs e)
+        {
+            MainFrame.Content = new SalesView();
+        }
+
+        private void BtnStock_Click(object sender, RoutedEventArgs e)
+        {
+            MainFrame.Content = new StockView();
+        }
     }
 }
