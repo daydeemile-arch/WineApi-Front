@@ -1,26 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Windows;
+﻿using System.Net.Http;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 
 namespace SolutionClients.Views
 {
-    /// <summary>
-    /// Logique d'interaction pour SuppliersView.xaml
-    /// </summary>
-    public partial class SuppliersView : Page
+    public partial class SuppliersView : Page  // ou UserControl
     {
-        public SuppliersView()
+        private readonly HttpClient _httpClient;
+
+        public SuppliersView(HttpClient httpClient)
         {
             InitializeComponent();
+            _httpClient = httpClient;
         }
     }
 }

@@ -1,29 +1,65 @@
-﻿using System.Windows;
+﻿using System;
+using System.Net.Http;
+using System.Net.Http.Headers;
+using System.Text;
+using System.Windows;
+using Newtonsoft.Json;
+using SolutionClients.Views;
 
 namespace SolutionClients.Views
 {
     public partial class LoginWindow : Window
     {
+        private readonly HttpClient _httpClient = new HttpClient();
+        private string? _token;
+
+        private const string BaseUrl = "http://localhost:5120";
+
         public LoginWindow()
         {
             InitializeComponent();
         }
 
-        private void BtnLogin_Click(object sender, RoutedEventArgs e)
+        private async void BtnLogin_Click(object sender, RoutedEventArgs e)
         {
-            // Récupérer le nom d'utilisateur depuis le champ TextBox
-            string username = txtUsername.Text;
+            TxtToken.Text = "Connexion en cours...";
+            TxtToken.Foreground = System.Windows.Media.Brushes.Gray;
 
-            // Récupérer le mot de passe depuis le champ PasswordBox
-            string password = txtPassword.Password;
+            try
+            {
+                var body = new
+                {
+                    email = TxtEmail.Text,
+                    password = TxtPassword.Password
+                };
 
-            //Vérifier les informations d'identification
-            //à finir !! if (username == "admin" && password == "password") // Exemple de validation simple
+                var json = JsonConvert.SerializeObject(body);
+                var content = new StringContent(json, Encoding.UTF8, "application/json");
 
-            Dashboard dashboard = new Dashboard();
-            dashboard.Show();
+                var response = await _httpClient.PostAsync($"{BaseUrl}/api/auth/login", content);
+                var result = await response.Content.ReadAsStringAsync();
 
-            this.Close();
+                if (response.IsSuccessStatusCode)
+                {
+                    dynamic? data = JsonConvert.DeserializeObject(result);
+                    _token = data?.token;
+
+                    // Ouvre le Dashboard en lui passant le token et le httpClient
+                    var dashboard = new Dashboard(_httpClient, _token!);
+                    dashboard.Show();
+                    this.Close(); // ferme la fenêtre de login
+                }
+                else
+                {
+                    TxtToken.Foreground = System.Windows.Media.Brushes.Red;
+                    TxtToken.Text = $"❌ Échec login : {response.StatusCode}";
+                }
+            }
+            catch (Exception ex)
+            {
+                TxtToken.Foreground = System.Windows.Media.Brushes.Red;
+                TxtToken.Text = $"❌ Erreur : {ex.Message}";
+            }
         }
     }
 }

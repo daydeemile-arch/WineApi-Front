@@ -1,26 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Windows;
+﻿using System.Net.Http;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 
 namespace SolutionClients.Views
 {
-    /// <summary>
-    /// Logique d'interaction pour StockView.xaml
-    /// </summary>
-    public partial class StockView : Page
+    public partial class StockView : Page  // ou UserControl
     {
-        public StockView()
+        private readonly HttpClient _httpClient;
+
+        public StockView(HttpClient httpClient)
         {
             InitializeComponent();
+            _httpClient = httpClient;
         }
     }
 }
