@@ -1,0 +1,141 @@
+﻿<Window x:Class="SolutionClients.Views.Register"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Register"
+        Height="700"
+        Width="850"
+        WindowStartupLocation="CenterScreen"
+        ResizeMode="NoResize"
+        Background="#F5F5F5">
+
+
+    <Grid Margin="0,0,0,-6">
+
+        <Button Content="⬅️" 
+        Background="Transparent" 
+        Foreground="Black" 
+        Width="45" Height="45"
+        HorizontalAlignment="Left"
+        VerticalAlignment="Top"
+        Margin="10,10,0,0"
+        FontSize="22"
+        BorderBrush="Transparent"
+        BorderThickness="0"
+        Cursor="Hand"
+        Click="BtnReturn_Click">
+            <Button.Style>
+                <Style TargetType="Button">
+                    <Setter Property="Background" Value="Transparent"/>
+                    <Setter Property="Template">
+                        <Setter.Value>
+                            <ControlTemplate TargetType="Button">
+                                <Border x:Name="border"
+                                Background="{TemplateBinding Background}"
+                                CornerRadius="22">
+                                    <ContentPresenter HorizontalAlignment="Center"
+                                              VerticalAlignment="Center"/>
+                                </Border>
+                                <ControlTemplate.Triggers>
+                                    <Trigger Property="IsMouseOver" Value="True">
+                                        <Setter TargetName="border" Property="Background" Value="Transparent"/>
+                                    </Trigger>
+                                    <Trigger Property="IsPressed" Value="True">
+                                        <Setter TargetName="border" Property="Background" Value="Transparent"/>
+                                    </Trigger>
+                                </ControlTemplate.Triggers>
+                            </ControlTemplate>
+                        </Setter.Value>
+                    </Setter>
+                </Style>
+            </Button.Style>
+        </Button>
+        <!-- Bloc GAUCHE -->
+        <Border Width="380" Height="358"
+                Background="White" CornerRadius="10" Padding="20"
+                HorizontalAlignment="Left" VerticalAlignment="Top"
+                Margin="45,56,0,0">
+            <StackPanel>
+                <TextBlock Text="Wine Management"
+                           FontSize="28" FontWeight="Bold"
+                           Margin="0,0,0,30" HorizontalAlignment="Center"/>
+
+                <TextBlock Text="Prénom" FontSize="14"/>
+                <TextBox x:Name="TxtPrenom" Height="35" Margin="0,0,0,10" FontSize="14"/>
+
+                <TextBlock Text="Nom" FontSize="14"/>
+                <TextBox x:Name="TxtNom" Height="35" Margin="0,0,0,10" FontSize="14"/>
+
+                <TextBlock Text="Email" FontSize="14"/>
+                <TextBox x:Name="TxtEmail" Height="35" Margin="0,0,0,10" FontSize="14"/>
+
+                <TextBlock Text="Téléphone" FontSize="14"/>
+                <TextBox x:Name="TxtTelephone" Height="35" FontSize="14"/>
+
+            </StackPanel>
+        </Border>
+
+        <!-- Bloc DROIT -->
+        <Border Width="380" Height="358"
+                Background="White" CornerRadius="10" Padding="20"
+                HorizontalAlignment="Left" VerticalAlignment="Top"
+                Margin="430,56,0,0">
+            <StackPanel>
+                <TextBlock Text="Sécurité &amp; Adresse"
+                           FontSize="28" FontWeight="Bold"
+                           Margin="0,0,0,30" HorizontalAlignment="Center"/>
+
+                <TextBlock Text="Mot de passe" FontSize="14"/>
+                <PasswordBox x:Name="TxtPassword" Height="35" Margin="0,0,0,10" FontSize="14"/>
+
+                <TextBlock Text="Confirmer le mot de passe" FontSize="14"/>
+                <PasswordBox x:Name="TxtConfirmPassword" Height="35" Margin="0,0,0,10" FontSize="14"/>
+
+                <TextBlock Text="Adresse" FontSize="14"/>
+                <TextBox x:Name="TxtAddress" Height="35" FontSize="14"/>
+            </StackPanel>
+        </Border>
+
+        <TextBlock x:Name="TxtToken" Margin="323,419,0,175"
+           TextWrapping="Wrap" Foreground="Green"
+           FontSize="11" HorizontalAlignment="Left" />
+
+        <Button Content="Create Account" 
+            Background="#8B0000" 
+            Foreground="White" 
+            Width="242" Height="64"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Top"
+            Margin="0,451,0,0"
+            FontSize="22"
+            BorderBrush="Transparent"
+            BorderThickness="0"
+            Cursor="Hand"
+            Click="BtnRegister_Click">
+            <Button.Style>
+                <Style TargetType="Button">
+                    <Setter Property="Background" Value="#8B0000"/>
+                    <Setter Property="Template">
+                        <Setter.Value>
+                            <ControlTemplate TargetType="Button">
+                                <Border x:Name="border"
+                            Background="{TemplateBinding Background}"
+                            CornerRadius="22">
+                                    <ContentPresenter HorizontalAlignment="Center"
+                                          VerticalAlignment="Center"/>
+                                </Border>
+                                <ControlTemplate.Triggers>
+                                    <Trigger Property="IsMouseOver" Value="True">
+                                        <Setter TargetName="border" Property="Background" Value="#5E0000"/>
+                                    </Trigger>
+                                    <Trigger Property="IsPressed" Value="True">
+                                        <Setter TargetName="border" Property="Background" Value="#3B0000"/>
+                                    </Trigger>
+                                </ControlTemplate.Triggers>
+                            </ControlTemplate>
+                        </Setter.Value>
+                    </Setter>
+                </Style>
+            </Button.Style>
+        </Button>
+    </Grid>
+</Window>

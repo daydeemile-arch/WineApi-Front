@@ -2,6 +2,7 @@
 using SolutionClients.Models;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
@@ -15,6 +16,9 @@ namespace SolutionClients.Views
     {
         private readonly HttpClient _httpClient;
         private const string BaseUrl = "http://localhost:5000";
+
+        private List<Wine> _tousLesVins = new();
+        private Wine? _vinSelectionne = null;
 
         private List<Wine> _tousLesVins = new();
         private Wine? _vinSelectionne = null;
@@ -37,73 +41,83 @@ namespace SolutionClients.Views
                 if (response.IsSuccessStatusCode)
                 {
                     _tousLesVins = JsonConvert.DeserializeObject<List<Wine>>(result) ?? new();
+                    dgWines.ItemsSource = null;
                     dgWines.ItemsSource = _tousLesVins;
-                    SetStatut($"✅ {_tousLesVins.Count} vins chargés", "Green");
+                    AfficherAlertes();
+                    SetStatut($"{_tousLesVins.Count} vins chargés", "Green");
                 }
                 else
                 {
-                    SetStatut($"❌ Erreur : {response.StatusCode}", "Red");
+                    SetStatut($"Erreur : {response.StatusCode}", "Red");
                 }
             }
             catch (Exception ex)
             {
-                SetStatut($"❌ {ex.Message}", "Red");
+                SetStatut($"{ex.Message}", "Red");
             }
         }
 
-        // ── Recherche par nom via l'API ──
-        private async void BtnSearch_Click(object sender, RoutedEventArgs e)
+        // ── Alertes stock bas ──
+        private void AfficherAlertes()
         {
-            var nom = txtSearch.Text.Trim();
+            var vinsEnAlerte = _tousLesVins.Where(v => v.IsBelowThreshold).ToList();
 
-            if (string.IsNullOrWhiteSpace(nom))
+            if (vinsEnAlerte.Any())
             {
-                await ChargerVins();
+                var noms = string.Join(", ", vinsEnAlerte
+                    .Select(v => $"{v.Name} ({v.QuantityStock}/{v.Threshold})"));
+                TxtAlerte.Text = $"⚠️ Stock bas pour : {noms}";
+                BandeauAlerte.Visibility = Visibility.Visible;
+            }
+            else
+            {
+                BandeauAlerte.Visibility = Visibility.Collapsed;
+            }
+        }
+
+        // ── Recherche locale en temps réel ──
+        private void txtSearch_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            var terme = txtSearch.Text.Trim().ToLower();
+
+            if (string.IsNullOrWhiteSpace(terme))
+            {
+                dgWines.ItemsSource = _tousLesVins;
+                SetStatut($"{_tousLesVins.Count} vins chargés", "Green");
                 return;
             }
 
-            try
-            {
-                SetStatut("Recherche en cours...", "Gray");
+            var resultats = _tousLesVins
+                .Where(v => v.Name.ToLower().Contains(terme))
+                .ToList();
 
-                var response = await _httpClient.GetAsync($"{BaseUrl}/api/Wines/byname/{Uri.EscapeDataString(nom)}");
-                var result = await response.Content.ReadAsStringAsync();
-
-                if (response.IsSuccessStatusCode)
-                {
-                    // L'API retourne un objet unique → on le met dans une liste
-                    var vin = JsonConvert.DeserializeObject<Wine>(result);
-                    dgWines.ItemsSource = vin != null ? new List<Wine> { vin } : new List<Wine>();
-                    SetStatut(vin != null ? "✅ 1 résultat" : "⚠️ Aucun résultat", vin != null ? "Green" : "Orange");
-                }
-                else if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
-                {
-                    dgWines.ItemsSource = null;
-                    SetStatut("⚠️ Aucun vin trouvé", "Orange");
-                }
-                else
-                {
-                    SetStatut($"❌ Erreur : {response.StatusCode}", "Red");
-                }
-            }
-            catch (Exception ex)
-            {
-                SetStatut($"❌ {ex.Message}", "Red");
-            }
+            dgWines.ItemsSource = resultats;
+            SetStatut(resultats.Count > 0 ? $"{resultats.Count} résultat(s)" : "Aucun résultat",
+                      resultats.Count > 0 ? "Green" : "Orange");
         }
 
-        // ── Recherche déclenchée aussi sur Entrée ──
-        private void txtSearch_TextChanged(object sender, TextChangedEventArgs e)
+        // ── Recherche bouton ──
+        private void BtnSearch_Click(object sender, RoutedEventArgs e)
         {
-            // Si le champ est vidé → recharge tout automatiquement
-            if (string.IsNullOrWhiteSpace(txtSearch.Text))
+            var terme = txtSearch.Text.Trim().ToLower();
+
+            if (string.IsNullOrWhiteSpace(terme))
             {
                 dgWines.ItemsSource = _tousLesVins;
-                SetStatut($"✅ {_tousLesVins.Count} vins chargés", "Green");
+                SetStatut($"{_tousLesVins.Count} vins chargés", "Green");
+                return;
             }
+
+            var resultats = _tousLesVins
+                .Where(v => v.Name.ToLower().Contains(terme))
+                .ToList();
+
+            dgWines.ItemsSource = resultats;
+            SetStatut(resultats.Count > 0 ? $"{resultats.Count} résultat(s)" : "Aucun résultat",
+                      resultats.Count > 0 ? "Green" : "Orange");
         }
 
-        // ── Sélection → remplissage du formulaire ──
+        // ── Sélection → remplissage formulaire ──
         private void dgWines_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (dgWines.SelectedItem is Wine vin)
@@ -113,6 +127,10 @@ namespace SolutionClients.Views
                 txtPrice.Text = vin.Price.ToString("F2");
                 txtStock.Text = vin.QuantityStock.ToString();
                 txtThreshold.Text = vin.Threshold.ToString();
+                txtQuantiteCommande.Text = vin.QuantiteCommande.ToString();
+                cbWineType.SelectedItem = cbWineType.Items
+                    .Cast<ComboBoxItem>()
+                    .FirstOrDefault(item => item.Content.ToString() == vin.Type);
             }
         }
 
@@ -125,8 +143,11 @@ namespace SolutionClients.Views
             {
                 name = txtWineName.Text,
                 price = decimal.Parse(txtPrice.Text),
-                quantityStock = int.Parse(txtStock.Text),
-                threshold = int.Parse(txtThreshold.Text)
+                type = cbWineType.SelectedItem is ComboBoxItem si ? si.Content.ToString() : "",
+                quantity = int.Parse(txtStock.Text),
+                waystock = int.Parse(txtThreshold.Text),
+                idSupplier = 1,
+                quantiteCommande = int.Parse(txtQuantiteCommande.Text)
             };
 
             var json = JsonConvert.SerializeObject(body);
@@ -135,13 +156,14 @@ namespace SolutionClients.Views
 
             if (response.IsSuccessStatusCode)
             {
-                SetStatut("✅ Vin ajouté", "Green");
+                SetStatut("Vin ajouté", "Green");
                 BtnClear_Click(sender, e);
                 await ChargerVins();
             }
             else
             {
-                SetStatut($"❌ Erreur ajout : {response.StatusCode}", "Red");
+                var err = await response.Content.ReadAsStringAsync();
+                SetStatut($"Erreur ajout : {response.StatusCode} - {err}", "Red");
             }
         }
 
@@ -150,7 +172,7 @@ namespace SolutionClients.Views
         {
             if (_vinSelectionne == null)
             {
-                SetStatut("⚠️ Sélectionne un vin d'abord", "Orange");
+                SetStatut("Sélectionne un vin d'abord", "Orange");
                 return;
             }
 
@@ -158,11 +180,13 @@ namespace SolutionClients.Views
 
             var body = new
             {
-                id = _vinSelectionne.Id,
                 name = txtWineName.Text,
                 price = decimal.Parse(txtPrice.Text),
-                quantityStock = int.Parse(txtStock.Text),
-                threshold = int.Parse(txtThreshold.Text)
+                type = cbWineType.SelectedItem is ComboBoxItem si ? si.Content.ToString() : "",
+                quantity = int.Parse(txtStock.Text),
+                waystock = int.Parse(txtThreshold.Text),
+                idSupplier = _vinSelectionne.ProviderId,
+                quantiteCommande = int.Parse(txtQuantiteCommande.Text)
             };
 
             var json = JsonConvert.SerializeObject(body);
@@ -171,13 +195,14 @@ namespace SolutionClients.Views
 
             if (response.IsSuccessStatusCode)
             {
-                SetStatut("✅ Vin modifié", "Green");
+                SetStatut("Vin modifié", "Green");
                 BtnClear_Click(sender, e);
                 await ChargerVins();
             }
             else
             {
-                SetStatut($"❌ Erreur modification : {response.StatusCode}", "Red");
+                var err = await response.Content.ReadAsStringAsync();
+                SetStatut($"Erreur modification : {response.StatusCode} - {err}", "Red");
             }
         }
 
@@ -186,7 +211,7 @@ namespace SolutionClients.Views
         {
             if (_vinSelectionne == null)
             {
-                SetStatut("⚠️ Sélectionne un vin d'abord", "Orange");
+                SetStatut("Sélectionne un vin d'abord", "Orange");
                 return;
             }
 
@@ -202,17 +227,17 @@ namespace SolutionClients.Views
 
             if (response.IsSuccessStatusCode)
             {
-                SetStatut("✅ Vin supprimé", "Green");
+                SetStatut("Vin supprimé", "Green");
                 BtnClear_Click(sender, e);
                 await ChargerVins();
             }
             else
             {
-                SetStatut($"❌ Erreur suppression : {response.StatusCode}", "Red");
+                SetStatut($"Erreur suppression : {response.StatusCode}", "Red");
             }
         }
 
-        // ── Vider le formulaire ──
+        // ── Vider formulaire ──
         private void BtnClear_Click(object sender, RoutedEventArgs e)
         {
             _vinSelectionne = null;
@@ -220,21 +245,23 @@ namespace SolutionClients.Views
             txtPrice.Text = "";
             txtStock.Text = "";
             txtThreshold.Text = "";
+            txtQuantiteCommande.Text = "";
             cbWineType.SelectedIndex = -1;
             dgWines.SelectedItem = null;
             txtSearch.Text = "";
             TxtStatut.Text = "";
         }
 
-        // ── Helpers ──
+        // ── Validation ──
         private bool FormulaireValide()
         {
             if (string.IsNullOrWhiteSpace(txtWineName.Text) ||
                 !decimal.TryParse(txtPrice.Text, out _) ||
                 !int.TryParse(txtStock.Text, out _) ||
-                !int.TryParse(txtThreshold.Text, out _))
+                !int.TryParse(txtThreshold.Text, out _) ||
+                !int.TryParse(txtQuantiteCommande.Text, out _))
             {
-                SetStatut("⚠️ Remplis tous les champs correctement", "Orange");
+                SetStatut("Remplis tous les champs correctement", "Orange");
                 return false;
             }
             return true;

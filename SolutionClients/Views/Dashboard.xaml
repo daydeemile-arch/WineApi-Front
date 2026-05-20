@@ -50,16 +50,19 @@
                         Click="BtnSales_Click"/>
 
 
-                <Button Content="📦 Stock"
+                <Button Content="📦 Supplier Orders"
+                        Height="45"
+                        Margin="0,10"
+                        FontSize="16"
+                        Click="BtnSpOrder_Click"/>
+                
+                <Button Content="📦 Stock "
                         Height="45"
                         Margin="0,10"
                         FontSize="16"
                         Click="BtnStock_Click"/>
-
-
                 <Button Content="Logout"
                         Height="45"
-                        Margin="0,50,0,0"
                         FontSize="16"
                         Background="Black"
                         Foreground="White" Click="Button_Click"/>
