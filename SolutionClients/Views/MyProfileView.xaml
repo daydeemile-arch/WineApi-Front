@@ -1,0 +1,47 @@
+﻿<UserControl x:Class="SolutionClients.Views.MyProfileView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <Grid Margin="20">
+
+        <StackPanel Width="400">
+
+            <TextBlock Text="My Profile"
+                       FontSize="26"
+                       FontWeight="Bold"
+                       Margin="0,0,0,20"/>
+
+            <TextBlock Text="First Name"/>
+            <TextBox x:Name="txtFirstName"
+                     IsReadOnly="True"
+                     Margin="0,5,0,15"/>
+
+            <TextBlock Text="Last Name"/>
+            <TextBox x:Name="txtLastName"
+                     IsReadOnly="True"
+                     Margin="0,5,0,15"/>
+
+            <TextBlock Text="Email"/>
+            <TextBox x:Name="txtEmail"
+                     IsReadOnly="True"
+                     Margin="0,5,0,15"/>
+
+            <TextBlock Text="Street"/>
+            <TextBox x:Name="txtStreet"
+                     IsReadOnly="True"
+                     Margin="0,5,0,15"/>
+
+            <TextBlock Text="Postal Code"/>
+            <TextBox x:Name="txtPostalCode"
+                     IsReadOnly="True"
+                     Margin="0,5,0,15"/>
+
+            <TextBlock Text="City"/>
+            <TextBox x:Name="txtCity"
+                     IsReadOnly="True"
+                     Margin="0,5,0,15"/>
+
+        </StackPanel>
+
+    </Grid>
+</UserControl>

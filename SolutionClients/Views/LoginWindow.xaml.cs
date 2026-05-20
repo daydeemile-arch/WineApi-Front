@@ -42,12 +42,40 @@ namespace SolutionClients.Views
                 if (response.IsSuccessStatusCode)
                 {
                     dynamic? data = JsonConvert.DeserializeObject(result);
+
                     _token = data?.token;
 
-                    // Ouvre le Dashboard en lui passant le token et le httpClient
-                    var dashboard = new Dashboard(_httpClient, _token!);
-                    dashboard.Show();
-                    this.Close(); // ferme la fenêtre de login
+                    string role =
+    data?.user?.role?.ToString() ?? "";
+
+                    Session.Role = role;
+
+                    // ADMIN
+                    if (role == "Admin")
+                    {
+                        var dashboard = new Dashboard(_httpClient, _token!);
+                        dashboard.Show();
+                    }
+
+                    // CLIENT
+                    else if (role == "Client")
+                    {
+                        Session.CustomerId =
+    (int)(data?.user?.customerId ?? 0);
+
+                        var dashboardClient =
+                            new DashboardClient();
+
+                        dashboardClient.Show();
+                    }
+
+                    else
+                    {
+                        MessageBox.Show("Rôle inconnu !");
+                        return;
+                    }
+
+                    this.Close();
                 }
                 else
                 {
