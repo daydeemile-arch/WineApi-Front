@@ -28,10 +28,12 @@
                      Height="35"
                      VerticalContentAlignment="Center"/>
 
-            <Button Content="Search"
+            <Button x:Name="btnSearch"
+                    Content="Search"
                     Width="100"
                     Height="35"
-                    Margin="10,0,0,0"/>
+                    Margin="10,0,0,0"
+                    Click="BtnSearch_Click"/>
         </StackPanel>
 
         <!-- Main -->
@@ -50,7 +52,8 @@
 
                 <DataGrid x:Name="dgSales"
                           AutoGenerateColumns="True"
-                          IsReadOnly="True"/>
+                          IsReadOnly="True"
+                          SelectionChanged="dgSales_SelectionChanged"/>
             </Border>
 
             <!-- Form -->
@@ -59,49 +62,58 @@
                     CornerRadius="10"
                     Padding="20">
 
-                <StackPanel>
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <StackPanel>
 
-                    <TextBlock Text="Customer"/>
-                    <ComboBox x:Name="cbCustomer"
-                              Height="35"
-                              Margin="0,5,0,15"/>
+                        <TextBlock Text="Customer" FontWeight="Bold" Margin="0,0,0,5"/>
+                        <ComboBox x:Name="cbCustomer"
+                                  Height="35"
+                                  Margin="0,0,0,15"/>
 
-                    <TextBlock Text="Wine"/>
-                    <ComboBox x:Name="cbWine"
-                              Height="35"
-                              Margin="0,5,0,15"/>
+                        <TextBlock Text="Wine" FontWeight="Bold" Margin="0,0,0,5"/>
+                        <ComboBox x:Name="cbWine"
+                                  Height="35"
+                                  Margin="0,0,0,15"/>
 
-                    <TextBlock Text="Quantity"/>
-                    <TextBox x:Name="txtQuantity"
-                             Height="35"
-                             Margin="0,5,0,15"/>
+                        <TextBlock Text="Quantity" FontWeight="Bold" Margin="0,0,0,5"/>
+                        <TextBox x:Name="txtQuantity"
+                                 Height="35"
+                                 Margin="0,0,0,15"/>
 
-                    <TextBlock Text="Total Amount"/>
-                    <TextBox x:Name="txtTotal"
-                             Height="35"
-                             Margin="0,5,0,15"/>
+                        <TextBlock Text="Total Amount" FontWeight="Bold" Margin="0,0,0,5"/>
+                        <TextBox x:Name="txtTotal"
+                                 Height="35"
+                                 Margin="0,0,0,15"
+                                 IsReadOnly="True"/>
 
-                    <TextBlock Text="Sale Date"/>
-                    <DatePicker x:Name="dpSaleDate"
-                                Margin="0,5,0,25"/>
+                        <TextBlock Text="Sale Date" FontWeight="Bold" Margin="0,0,0,5"/>
+                        <DatePicker x:Name="dpSaleDate"
+                                    Margin="0,0,0,25"/>
 
-                    <Button Content="Add Sale"
-                            Height="40"
-                            Margin="0,5"
-                            Background="#8B0000"
-                            Foreground="White"/>
+                        <Button x:Name="btnAddSale"
+                                Content="Add Sale"
+                                Height="40"
+                                Margin="0,5"
+                                Background="#8B0000"
+                                Foreground="White"
+                                Click="BtnAddSale_Click"/>
 
-                    <Button Content="Update Sale"
-                            Height="40"
-                            Margin="0,5"/>
+                        <Button x:Name="btnUpdateSale"
+                                Content="Update Sale"
+                                Height="40"
+                                Margin="0,5"
+                                Click="BtnUpdateSale_Click"/>
 
-                    <Button Content="Delete Sale"
-                            Height="40"
-                            Margin="0,5"
-                            Background="#D32F2F"
-                            Foreground="White"/>
+                        <Button x:Name="btnDeleteSale"
+                                Content="Delete Sale"
+                                Height="40"
+                                Margin="0,5"
+                                Background="#D32F2F"
+                                Foreground="White"
+                                Click="BtnDeleteSale_Click"/>
 
-                </StackPanel>
+                    </StackPanel>
+                </ScrollViewer>
 
             </Border>
 

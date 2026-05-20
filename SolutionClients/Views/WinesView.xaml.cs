@@ -14,7 +14,7 @@ namespace SolutionClients.Views
     public partial class WinesView : Page
     {
         private readonly HttpClient _httpClient;
-        private const string BaseUrl = "http://localhost:5120";
+        private const string BaseUrl = "http://localhost:5000";
 
         private List<Wine> _tousLesVins = new();
         private Wine? _vinSelectionne = null;
