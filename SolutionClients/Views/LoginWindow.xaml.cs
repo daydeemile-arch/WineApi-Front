@@ -18,7 +18,14 @@ namespace SolutionClients.Views
         public LoginWindow()
         {
             InitializeComponent();
+
         }
+        private void BtnRegister_Click(object sender, RoutedEventArgs e)
+{
+            var register = new Register(_httpClient);
+            register.Show();
+            this.Close();
+}
 
         private async void BtnLogin_Click(object sender, RoutedEventArgs e)
         {
@@ -43,6 +50,8 @@ namespace SolutionClients.Views
                 {
                     dynamic? data = JsonConvert.DeserializeObject(result);
                     _token = data?.token;
+                    _httpClient.DefaultRequestHeaders.Authorization =
+        new AuthenticationHeaderValue("Bearer", _token);
 
                     // Ouvre le Dashboard en lui passant le token et le httpClient
                     var dashboard = new Dashboard(_httpClient, _token!);
