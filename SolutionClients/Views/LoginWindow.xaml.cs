@@ -13,7 +13,7 @@ namespace SolutionClients.Views
         private readonly HttpClient _httpClient = new HttpClient();
         private string? _token;
 
-        private const string BaseUrl = "http://localhost:5120";
+        private const string BaseUrl = "http://localhost:5000";
 
         public LoginWindow()
         {
