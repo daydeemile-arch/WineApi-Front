@@ -1,15 +1,14 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
 
 namespace SolutionClients.Models
 {
-    internal class Customer : INotifyPropertyChanged
+    internal class Supplier : INotifyPropertyChanged
     {
         public int Id { get; set; }
-        public string FirstName { get; set; } = "";
-        public string LastName { get; set; } = "";
-        public string Email { get; set; } = "";
+        public string Name { get; set; } = "";
         public string PhoneNumber { get; set; } = "";
-        public int IdAdresse { get; set; }
+        public string Email { get; set; } = "";
+        public int IdAdress { get; set; }
 
         private string _fullAddress = "";
         public string FullAddress

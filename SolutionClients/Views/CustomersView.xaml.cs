@@ -11,6 +11,7 @@ namespace SolutionClients.Views
     {
         private List<Customer> _tousLesClients = new();
         private Customer? _clientSelectionne = null;
+        private int? _currentAddressId = null;
 
         private readonly HttpClient _httpClient;
         private const string BaseUrl = "http://localhost:5120";
@@ -33,8 +34,12 @@ namespace SolutionClients.Views
                 if (response.IsSuccessStatusCode)
                 {
                     _tousLesClients = JsonConvert.DeserializeObject<List<Customer>>(result) ?? new();
+
+                    var tasks = _tousLesClients.Select(c => FetchAndSetAddressForCustomer(c)).ToList();
+                    await Task.WhenAll(tasks);
+
                     dgCustomers.ItemsSource = null;
-                    dgCustomers.ItemsSource = _tousLesClients;
+                    dgCustomers.ItemsSource = _tousLesClients.ToList();
                     SetStatut($"{_tousLesClients.Count} clients chargés", "Green");
                 }
                 else
@@ -48,7 +53,65 @@ namespace SolutionClients.Views
             }
         }
 
-        // ── Recherche locale en temps réel (TextChanged) ──
+        // ── Charger l'adresse complète pour affichage dans le DataGrid ──
+        private async Task FetchAndSetAddressForCustomer(Customer customer)
+        {
+            try
+            {
+                if (customer.IdAdresse <= 0)
+                {
+                    customer.FullAddress = "Adresse non définie";
+                    return;
+                }
+
+                var response = await _httpClient.GetAsync($"{BaseUrl}/api/Address/{customer.IdAdresse}");
+                var result = await response.Content.ReadAsStringAsync();
+
+                if (response.IsSuccessStatusCode)
+                {
+                    var address = JsonConvert.DeserializeObject<Address>(result);
+                    customer.FullAddress = address?.FullAddress ?? "Adresse non définie";
+                }
+                else
+                {
+                    customer.FullAddress = "Adresse non définie";
+                }
+            }
+            catch
+            {
+                customer.FullAddress = "Adresse non définie";
+            }
+        }
+
+        // ── Charger l'adresse dans le formulaire à la sélection ──
+        private async Task FetchAndSetAddressForm(Customer customer)
+        {
+            try
+            {
+                if (customer.IdAdresse <= 0) return;
+
+                var response = await _httpClient.GetAsync($"{BaseUrl}/api/Address/{customer.IdAdresse}");
+                var result = await response.Content.ReadAsStringAsync();
+
+                if (response.IsSuccessStatusCode)
+                {
+                    var address = JsonConvert.DeserializeObject<Address>(result);
+                    if (address != null)
+                    {
+                        txtNumRue.Text = address.StreetNumber;
+                        txtNomRue.Text = address.StreetName;
+                        txtCodePostal.Text = address.PostalCode;
+                        txtVille.Text = address.City;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                SetStatut($"Erreur adresse : {ex.Message}", "Red");
+            }
+        }
+
+        // ── Recherche locale en temps réel ──
         private void txtSearchCustomer_TextChanged(object sender, TextChangedEventArgs e)
         {
             var terme = txtSearchCustomer.Text.Trim().ToLower();
@@ -69,7 +132,7 @@ namespace SolutionClients.Views
                       resultats.Count > 0 ? "Green" : "Orange");
         }
 
-        // ── Recherche par nom via l'API (bouton Search) ──
+        // ── Recherche par nom via l'API ──
         private async void BtnSearch_Click(object sender, RoutedEventArgs e)
         {
             var nom = txtSearchCustomer.Text.Trim();
@@ -83,7 +146,6 @@ namespace SolutionClients.Views
             try
             {
                 SetStatut("Recherche en cours...", "Gray");
-
                 var response = await _httpClient.GetAsync($"{BaseUrl}/api/Customers/byname/{Uri.EscapeDataString(nom)}");
                 var result = await response.Content.ReadAsStringAsync();
 
@@ -109,16 +171,19 @@ namespace SolutionClients.Views
             }
         }
 
-        // ── Sélection dans la grille → remplissage du formulaire ──
-        private void dgCustomers_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        // ── Sélection → remplissage formulaire ──
+        private async void dgCustomers_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (dgCustomers.SelectedItem is Customer client)
             {
                 _clientSelectionne = client;
+                _currentAddressId = client.IdAdresse > 0 ? client.IdAdresse : (int?)null;
+
                 txtFirstName.Text = client.FirstName;
                 txtLastName.Text = client.LastName;
                 txtEmail.Text = client.Email;
-                txtAdresse.Text = client.Adresse;
+
+                await FetchAndSetAddressForm(client);
             }
         }
 
@@ -129,12 +194,43 @@ namespace SolutionClients.Views
 
             try
             {
+                // 1. Créer l'adresse
+                var newAddress = new
+                {
+                    StreetNumber = txtNumRue.Text,
+                    StreetName = txtNomRue.Text,
+                    PostalCode = txtCodePostal.Text,
+                    City = txtVille.Text
+                };
+
+                var jsonAddress = JsonConvert.SerializeObject(newAddress);
+                var contentAddress = new StringContent(jsonAddress, Encoding.UTF8, "application/json");
+                var responseAddress = await _httpClient.PostAsync($"{BaseUrl}/api/Address", contentAddress);
+
+                if (!responseAddress.IsSuccessStatusCode)
+                {
+                    var err = await responseAddress.Content.ReadAsStringAsync();
+                    SetStatut($"Erreur création adresse : {err}", "Red");
+                    return;
+                }
+
+                var addressResult = await responseAddress.Content.ReadAsStringAsync();
+                var addressData = JsonConvert.DeserializeObject<Address>(addressResult);
+
+                if (addressData == null || addressData.Id == 0)
+                {
+                    SetStatut("Erreur : ID adresse non récupéré", "Red");
+                    return;
+                }
+
+                // 2. Créer le client avec l'IdAdresse
                 var body = new
                 {
-                    nom = txtLastName.Text,
-                    prenom = txtFirstName.Text,
-                    email = txtEmail.Text,
-                    adresse = txtAdresse.Text
+                    Nom = txtLastName.Text,
+                    Prenom = txtFirstName.Text,
+                    Email = txtEmail.Text,
+                    Telephone = "",
+                    IdAdresse = addressData.Id
                 };
 
                 var json = JsonConvert.SerializeObject(body);
@@ -172,12 +268,36 @@ namespace SolutionClients.Views
 
             try
             {
+                // 1. Mettre à jour l'adresse si elle existe
+                if (_currentAddressId.HasValue)
+                {
+                    var updatedAddress = new
+                    {
+                        StreetNumber = txtNumRue.Text,
+                        StreetName = txtNomRue.Text,
+                        PostalCode = txtCodePostal.Text,
+                        City = txtVille.Text
+                    };
+
+                    var jsonAddress = JsonConvert.SerializeObject(updatedAddress);
+                    var contentAddress = new StringContent(jsonAddress, Encoding.UTF8, "application/json");
+                    var responseAddress = await _httpClient.PutAsync($"{BaseUrl}/api/Address/{_currentAddressId}", contentAddress);
+
+                    if (!responseAddress.IsSuccessStatusCode)
+                    {
+                        SetStatut($"Erreur mise à jour adresse : {responseAddress.StatusCode}", "Red");
+                        return;
+                    }
+                }
+
+                // 2. Mettre à jour le client
                 var body = new
                 {
-                    nom = txtLastName.Text,
-                    prenom = txtFirstName.Text,
-                    email = txtEmail.Text,
-                    adresse = txtAdresse.Text
+                    Nom = txtLastName.Text,
+                    Prenom = txtFirstName.Text,
+                    Email = txtEmail.Text,
+                    Telephone = "",
+                    IdAdresse = _currentAddressId ?? 0
                 };
 
                 var json = JsonConvert.SerializeObject(body);
@@ -213,9 +333,7 @@ namespace SolutionClients.Views
 
             var confirm = MessageBox.Show(
                 $"Supprimer « {txtLastName.Text} {txtFirstName.Text} » ?",
-                "Confirmation",
-                MessageBoxButton.YesNo,
-                MessageBoxImage.Warning);
+                "Confirmation", MessageBoxButton.YesNo, MessageBoxImage.Warning);
 
             if (confirm != MessageBoxResult.Yes) return;
 
@@ -244,16 +362,20 @@ namespace SolutionClients.Views
         private void BtnClear_Click(object sender, RoutedEventArgs e)
         {
             _clientSelectionne = null;
+            _currentAddressId = null;
             txtFirstName.Text = "";
             txtLastName.Text = "";
             txtEmail.Text = "";
-            txtAdresse.Text = "";
+            txtNumRue.Text = "";
+            txtNomRue.Text = "";
+            txtCodePostal.Text = "";
+            txtVille.Text = "";
             dgCustomers.SelectedItem = null;
             txtSearchCustomer.Text = "";
             TxtStatut.Text = "";
         }
 
-        // ── Validation du formulaire ──
+        // ── Validation ──
         private bool FormulaireValide()
         {
             if (string.IsNullOrWhiteSpace(txtFirstName.Text) ||
@@ -266,7 +388,6 @@ namespace SolutionClients.Views
             return true;
         }
 
-        // ── Affichage du statut coloré ──
         private void SetStatut(string message, string couleur)
         {
             TxtStatut.Text = message;
