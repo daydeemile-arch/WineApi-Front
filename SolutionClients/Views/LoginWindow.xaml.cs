@@ -13,12 +13,19 @@ namespace SolutionClients.Views
         private readonly HttpClient _httpClient = new HttpClient();
         private string? _token;
 
-        private const string BaseUrl = "http://localhost:5120";
+        private const string BaseUrl = "http://localhost:5000";
 
         public LoginWindow()
         {
             InitializeComponent();
+
         }
+        private void BtnRegister_Click(object sender, RoutedEventArgs e)
+{
+            var register = new Register(_httpClient);
+            register.Show();
+            this.Close();
+}
 
         private async void BtnLogin_Click(object sender, RoutedEventArgs e)
         {
@@ -44,6 +51,8 @@ namespace SolutionClients.Views
                     dynamic? data = JsonConvert.DeserializeObject(result);
 
                     _token = data?.token;
+                    _httpClient.DefaultRequestHeaders.Authorization =
+        new AuthenticationHeaderValue("Bearer", _token);
 
                     string role =
     data?.user?.role?.ToString() ?? "";

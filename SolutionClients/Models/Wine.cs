@@ -7,11 +7,21 @@
         public string Name { get; set; } = "";
 
         public decimal Price { get; set; }
+<<<<<<< HEAD
 
         public int QuantityStock { get; set; }
 
         public int Threshold { get; set; }
 
+=======
+        public string Type { get; set; } = "";
+        public decimal QuantityStock { get; set; }
+        public decimal Threshold { get; set; }
+>>>>>>> refs/remotes/origin/main
         public int ProviderId { get; set; }
+        public int QuantiteCommande { get; set; }
+
+        // Propriété calculée pour le style de ligne
+        public bool IsBelowThreshold => QuantityStock <= Threshold;
     }
 }

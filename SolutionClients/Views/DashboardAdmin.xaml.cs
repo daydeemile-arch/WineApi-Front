@@ -43,6 +43,10 @@ namespace SolutionClients.Views
             MainFrame.Content = new SalesView(_httpClient);
         }
 
+        private void BtnSpOrder_Click(object sender, RoutedEventArgs e)
+        {
+            MainFrame.Content = new SupplierOrders(_httpClient);
+        }
         private void BtnStock_Click(object sender, RoutedEventArgs e)
         {
             MainFrame.Content = new StockView(_httpClient);
